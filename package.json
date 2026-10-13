@@ -1,0 +1,30 @@
+{
+  "name": "@dotrino/prerender",
+  "version": "0.1.0",
+  "description": "Las apps de Dotrino llegan con contenido: escribe en el HTML del build lo que la página dice de sí misma, para quien la lee sin ejecutar JavaScript.",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./vite": "./src/vite.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imdotrino/dotrino-prerender.git"
+  },
+  "keywords": [
+    "dotrino",
+    "seo",
+    "prerender",
+    "vite-plugin"
+  ]
+}
