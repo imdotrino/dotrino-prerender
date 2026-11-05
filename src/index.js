@@ -18,7 +18,12 @@ const COPY = {
   en: { home: 'https://dotrino.com/en/', apps: 'All Dotrino apps', wiki: 'https://wiki.dotrino.com/en/', docs: 'Documentation' },
 }
 
+/** An error with a stable `code` to check against (`no-title`, `no-description`, …). */
 export class PrerenderError extends Error {
+  /**
+   * @param {string} code
+   * @param {string} message
+   */
   constructor (code, message) {
     super(message)
     this.name = 'PrerenderError'
@@ -26,13 +31,23 @@ export class PrerenderError extends Error {
   }
 }
 
+/** @param {unknown} s */
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+/**
+ * @param {string} tag
+ * @param {string} name
+ * @returns {string|null}
+ */
 const attr = (tag, name) => {
   const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*("([^"]*)"|'([^']*)')`, 'i'))
   return m ? (m[2] ?? m[3]) : null
 }
 
+/**
+ * @param {string} html
+ * @returns {string|null}
+ */
 const metaDescription = (html) => {
   for (const tag of html.match(/<meta\b[^>]*>/gi) || []) {
     if ((attr(tag, 'name') || '').toLowerCase() === 'description') return attr(tag, 'content')
@@ -41,13 +56,18 @@ const metaDescription = (html) => {
 }
 
 /**
+ * @typedef {object} PrerenderOptions
+ * @property {string|string[]} [text]   extra paragraphs (plain text) under the description
+ * @property {{href: string, text: string}[]} [links]   extra links, before the ecosystem ones
+ */
+
+/**
  * Returns `html` with the static block written after <body>. Running it again on its own
  * output replaces the block instead of adding a second one.
  *
  * @param {string} html
- * @param {object} [opts]
- * @param {string|string[]} [opts.text]   extra paragraphs (plain text) under the description
- * @param {{href: string, text: string}[]} [opts.links]   extra links, before the ecosystem ones
+ * @param {PrerenderOptions} [opts]
+ * @returns {string}
  */
 export function prerenderHtml (html, opts = {}) {
   if (typeof html !== 'string') throw new PrerenderError('bad-html', 'prerender: html must be a string')
@@ -63,7 +83,7 @@ export function prerenderHtml (html, opts = {}) {
   if (!lang) throw new PrerenderError('no-lang', 'prerender: <html> has no lang')
   const copy = COPY[lang.toLowerCase().startsWith('en') ? 'en' : 'es']
 
-  const paragraphs = [].concat(opts.text ?? []).map((p) => `<p>${esc(p)}</p>`).join('')
+  const paragraphs = /** @type {string[]} */ ([]).concat(opts.text ?? []).map((p) => `<p>${esc(p)}</p>`).join('')
   const links = [
     ...(opts.links ?? []).map((l) => `<a href="${esc(l.href)}">${esc(l.text)}</a>`),
     `<a href="${copy.home}">${copy.apps}</a>`,
@@ -83,6 +103,7 @@ export function prerenderHtml (html, opts = {}) {
 
   const body = html.match(/<body\b[^>]*>/i)
   if (!body) throw new PrerenderError('no-body', 'prerender: the page has no <body>')
-  const at = body.index + body[0].length
+  // A match from `String.prototype.match` without the g flag always carries `index`.
+  const at = /** @type {number} */ (body.index) + body[0].length
   return html.slice(0, at) + '\n    ' + block + html.slice(at)
 }

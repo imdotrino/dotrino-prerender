@@ -37,6 +37,8 @@ jobs:
 
       - run: npm i -g npm@latest
       - run: npm ci
+      # Tipos estrictos (tsc --noEmit) antes de publicar.
+      - run: npm run type-check
 
       # LAS PRUEBAS ANTES DE PUBLICAR. Una versión que no pasa su suite no llega a npm.
       - run: npm test
